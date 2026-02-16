@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Career Path Graph</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 30px auto; padding: 0 14px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    input, button { padding: 10px; font-size: 16px; }
+    input { flex: 1; min-width: 260px; }
+    button { cursor: pointer; }
+    img { width: 100%; border: 1px solid #ddd; border-radius: 10px; margin-top: 16px; }
+    .muted { color: #666; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h2>Career Path Graph UI</h2>
+
+  <div class="row">
+    <input id="role" placeholder="Enter job role (e.g., Data Analyst)" />
+    <input id="steps" placeholder="Steps (default 3)" style="max-width:180px" />
+    <button onclick="generate()">Generate</button>
+  </div>
+
+  <div class="muted" id="info"></div>
+
+  <img id="graph" alt="Graph will appear here" />
+
+<script>
+const BASE = "http://127.0.0.1:8000";
+
+async function generate() {
+  const role = document.getElementById("role").value.trim();
+  if (!role) return alert("Enter a role");
+
+  const stepsVal = document.getElementById("steps").value.trim();
+  const steps = stepsVal ? Number(stepsVal) : 3;
+
+  if (!Number.isFinite(steps) || steps <= 0) {
+    return alert("Steps must be a positive number");
+  }
+
+  const infoEl = document.getElementById("info");
+  const imgEl = document.getElementById("graph");
+  const btn = document.querySelector("button");
+
+  btn.disabled = true;
+  infoEl.innerText = "Checking possible path...";
+  imgEl.removeAttribute("src");
+
+  try {
+    // 1) Ask backend what it can actually produce
+    const infoUrl = `${BASE}/graph_info?role=${encodeURIComponent(role)}&steps=${steps}`;
+    const r = await fetch(infoUrl);
+    const data = await r.json();
+
+    if (!r.ok) {
+      infoEl.innerText = `Error: ${data?.detail || "Request failed"}`;
+      return;
+    }
+
+    // 2) Tell the user what will happen (complete / partial / none)
+    if (!data.path_exists) {
+      infoEl.innerText = `No path found for "${data.resolved_role}". ${data.reason || ""}`.trim();
+
+      // Still load image: improved plotter shows a clean message image
+      const imgUrl = `${BASE}/graph_image?role=${encodeURIComponent(role)}&steps=${steps}&_t=${Date.now()}`;
+      imgEl.src = imgUrl;
+      return;
+    }
+
+    if (data.actual_steps < steps) {
+      infoEl.innerText =
+        `Partial path: found ${data.actual_steps} of ${steps}. Path: ${data.path.join(" → ")}`;
+    } else {
+      infoEl.innerText =
+        `Complete path (${steps} steps): ${data.path.join(" → ")}`;
+    }
+
+    // 3) Load the image (cache bust with _t)
+    const imgUrl = `${BASE}/graph_image?role=${encodeURIComponent(role)}&steps=${steps}&_t=${Date.now()}`;
+    imgEl.onerror = () => {
+      infoEl.innerText = "Image failed to load. Make sure the API is running and CORS/network is OK.";
+    };
+    imgEl.src = imgUrl;
+
+  } catch (e) {
+    infoEl.innerText = `Network error: ${e.message}`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+
+</body>
+</html>
