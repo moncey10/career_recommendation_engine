@@ -1,30 +1,44 @@
-# Career Path Recommendation Engine
+# 🎯 Career Recommendation Engine — AI-Powered Career Path & Skill Gap Analyzer
 
-## Overview
-AI-powered career recommendation system that suggests next roles and identifies skill gaps based on user input.
+> Analyzes a user's current skills, suggests best next roles, identifies skill gaps, and estimates learning time — powered by embedding-based semantic matching.
 
-## Features
-- Role progression suggestions
-- Skill gap analysis
-- Embedding-based similarity matching
-- Career path visualization
-- FastAPI backend APIs
 
-## Tech Stack
-- Python
-- FastAPI
-- NumPy
-- Scikit-learn
-- RapidFuzz
-- HTML
+## 🚀 What It Does
+- 🧠 Converts user skills into semantic embedding vectors
+- 🎯 Matches user profile to job roles using cosine similarity
+- 📉 Identifies exactly which skills are missing for target roles
+- ⏱️ Estimates realistic learning time to bridge each gap
+- 🔄 Personalized per user — not generic roadmaps
 
-## How To Run
+## 🛠️ Tech Stack
+| Component | Technology |
+|-----------|-----------|
+| Backend API | FastAPI + Python |
+| Embeddings | Sentence Transformers (all-MiniLM-L6-v2) |
+| Similarity | Cosine Similarity (scikit-learn) |
+| Data Processing | Pandas + NumPy |
 
-1. Install dependencies:
+## ⚙️ Setup
+```bash
+git clone https://github.com/moncey10/career_recommendation_engine.git
+cd career_recommendation_engine
 pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
-2. Run the API:
-uvicorn app:app --reload
+## 📡 Sample API Response
+```json
+{
+  "recommended_roles": [
+    {
+      "role": "ML Engineer",
+      "match_score": 0.89,
+      "missing_skills": ["Kubernetes", "MLflow"],
+      "estimated_learning_time": "3-4 weeks"
+    }
+  ]
+}
+```
 
-3. Open in browser:
-http://127.0.0.1:8000/docs
+## 👤 Author
+**Moncey Patel** — AI/ML Engineer | [LinkedIn](https://linkedin.com/in/your-linkedin) | [GitHub](https://github.com/moncey10)
